@@ -1,3 +1,5 @@
+use dotenv::dotenv;
+
 struct Position {
     x: i32,
 }
@@ -77,7 +79,7 @@ struct Actuator {
 impl Actuator{
     pub fn new(position_sensor: PositionSensor, dirty_sensor: DirtySensor, environment: Environment) -> Actuator {
         Actuator {
-            position: Position { x: 3 },
+            position: Position { x: position_sensor.position.x.clone() },
             position_sensor,
             dirty_sensor,
             environment,
@@ -134,10 +136,16 @@ impl Actuator{
 }
 
 fn main() {
-    let mut robot: Actuator = Actuator::new(PositionSensor::new(Position::new(0)),
-                                            DirtySensor::new(Position::new(0)),
-                                            Environment::new(vec![true, false, true,
-                                                            false, false, true]));
+    dotenv().ok();
+
+    let position =  std::env::var("ROBOT_POSITION").unwrap().parse::<i32>().unwrap();
+    let env_map = std::env::var("ENVIRONMENT_MAP").ok();
+
+    let mut robot: Actuator = Actuator::new(PositionSensor::new(Position::new(position.clone())),
+                                            DirtySensor::new(Position::new(position.clone())),
+                                            Environment::new(Vec::from(env_map.clone().
+                                                unwrap().split(",").map(|x| x.parse::<bool>().
+                                                unwrap()).collect::<Vec<bool>>())));
 
     println!("Robot started");
     println!("Initial pos: {}", robot.position.x);
