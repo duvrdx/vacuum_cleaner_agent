@@ -133,7 +133,6 @@ impl Actuator{
     }
 }
 
-
 fn main() {
     let mut robot: Actuator = Actuator::new(PositionSensor::new(Position::new(0)),
                                             DirtySensor::new(Position::new(0)),
