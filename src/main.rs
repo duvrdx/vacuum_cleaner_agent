@@ -1,10 +1,29 @@
-#[derive(Debug)]
 struct Position {
     x: i32,
 }
 
+impl Position {
+    pub fn new(x: i32) -> Position {
+        Position { x }
+    }
+}
+
 struct Environment {
     map: Vec<bool>,
+}
+
+impl Environment {
+    pub fn new(map: Vec<bool>) -> Environment {
+        Environment { map }
+    }
+
+    pub fn print(&self) {
+        println!("Environment: ");
+        for i in 0..self.map.len() {
+            print!("{} ", self.map[i]);
+        }
+        println!();
+    }
 }
 
 struct PositionSensor {
@@ -12,6 +31,11 @@ struct PositionSensor {
 }
 
 impl PositionSensor {
+
+    pub fn new(position: Position) -> PositionSensor {
+        PositionSensor { position }
+    }
+
     pub fn update_position(&mut self, new_position: i32) {
         self.position.x = new_position;
     }
@@ -26,6 +50,11 @@ struct DirtySensor {
 }
 
 impl DirtySensor {
+
+    pub fn new(position: Position) -> DirtySensor {
+        DirtySensor { position }
+    }
+
     pub fn update_position(&mut self, new_position: i32) {
         self.position.x = new_position;
     }
@@ -104,13 +133,14 @@ impl Actuator{
 
 
 fn main() {
-    let mut robot: Actuator = Actuator::new(PositionSensor{position: Position{x: 3}},
-                                            DirtySensor{position: Position{x: 3}},
-                                            Environment{ map: vec![true, true, true,
-                                                                    false, true, false, true]});
+    let mut robot: Actuator = Actuator::new(PositionSensor::new(Position::new(3)),
+                                            DirtySensor::new(Position::new(3)),
+                                            Environment::new(vec![true, false, true,
+                                                            false, false, true]));
 
     while !robot.finished() {
         println!("Robot is at {}", robot.position.x);
+        robot.environment.print();
         if robot.dirty_sensor.is_dirty(&robot.environment) {
             robot.suck();
             println!("Robot sucked {}", robot.position.x)
