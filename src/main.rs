@@ -22,7 +22,7 @@ impl Environment {
         for i in 0..self.map.len() {
             print!("{} ", self.map[i]);
         }
-        println!();
+        println!("\n");
     }
 }
 
@@ -78,9 +78,9 @@ impl Actuator{
     pub fn new(position_sensor: PositionSensor, dirty_sensor: DirtySensor, environment: Environment) -> Actuator {
         Actuator {
             position: Position { x: 3 },
-            position_sensor: position_sensor,
-            dirty_sensor: dirty_sensor,
-            environment: environment,
+            position_sensor,
+            dirty_sensor,
+            environment,
             historical: Vec::new(),
             direction: true
         }
@@ -121,32 +121,41 @@ impl Actuator{
     }
 
     pub fn suck(&mut self) {
-        if self.dirty_sensor.is_dirty(&mut self.environment) {
+        if self.dirty_sensor.is_dirty(&self.environment) {
             self.environment.map[self.position_sensor.get_position().x as usize] = false;
         }
     }
 
     pub fn finished(&self) -> bool {
-        return self.historical.len() as i32 == self.environment.map.len() as i32
+        self.historical.len() as i32 == self.environment.map.len() as i32
+        &&
+        !self.environment.map.contains(&true)
     }
 }
 
 
 fn main() {
-    let mut robot: Actuator = Actuator::new(PositionSensor::new(Position::new(3)),
-                                            DirtySensor::new(Position::new(3)),
+    let mut robot: Actuator = Actuator::new(PositionSensor::new(Position::new(0)),
+                                            DirtySensor::new(Position::new(0)),
                                             Environment::new(vec![true, false, true,
                                                             false, false, true]));
 
+    println!("Robot started");
+    println!("Initial pos: {}", robot.position.x);
+    robot.environment.print();
+
     while !robot.finished() {
         println!("Robot is at {}", robot.position.x);
-        robot.environment.print();
         if robot.dirty_sensor.is_dirty(&robot.environment) {
             robot.suck();
             println!("Robot sucked {}", robot.position.x)
         }
-
+        
         robot.choose_side();
         robot.move_robot();
+        
     }
+    println!("\nRobot finished");
+    println!("Last pos: {}", robot.position.x);
+    robot.environment.print();
 }
